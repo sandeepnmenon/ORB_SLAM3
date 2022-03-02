@@ -91,3 +91,11 @@ my_settings.txt
 borrar/*
 
 */ExecMean.txt
+
+Examples/*/f_*.csv
+Examples/*/CameraTrajectory*.txt
+Examples/*/kf_*.csv
+Examples/*/KeyFrameTrajectory*.txt
+Examples/*/Results/
+
+.vscode/

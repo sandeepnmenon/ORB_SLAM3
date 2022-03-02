@@ -30,15 +30,15 @@
 
 using namespace std;
 
-void LoadImages(const string &strImagePath, const string &strPathTimes,
+void LoadImages(const string &strImagePath, const string &strPathTimes, const int num_frames,
                 vector<string> &vstrImages, vector<double> &vTimeStamps);
 
 double ttrack_tot = 0;
 int main(int argc, char **argv)
 {
-    const int num_seq = (argc-3)/2;
+    const int num_seq = (argc-4)/2;
     cout << "num_seq = " << num_seq << endl;
-    bool bFileName= (((argc-3) % 2) == 1);
+    bool bFileName= (((argc-4) % 2) == 1);
 
     string file_name;
     if (bFileName)
@@ -50,7 +50,7 @@ int main(int argc, char **argv)
 
     if(argc < 4)
     {
-        cerr << endl << "Usage: ./mono_tum_vi path_to_vocabulary path_to_settings path_to_image_folder_1 path_to_times_file_1 (path_to_image_folder_2 path_to_times_file_2 ... path_to_image_folder_N path_to_times_file_N) (trajectory_file_name)" << endl;
+        cerr << endl << "Usage: ./mono_tum_vi path_to_vocabulary path_to_settings path_to_image_folder_1 path_to_times_file_1 number_frames_1 (path_to_image_folder_2 path_to_times_file_2 ... path_to_image_folder_N path_to_times_file_N) (trajectory_file_name)" << endl;
         return 1;
     }
 
@@ -68,8 +68,9 @@ int main(int argc, char **argv)
     for (seq = 0; seq<num_seq; seq++)
     {
         cout << "Loading images for sequence " << seq << "...";
-        LoadImages(string(argv[(2*seq)+3]), string(argv[(2*seq)+4]), vstrImageFilenames[seq], vTimestampsCam[seq]);
-        cout << "LOADED!" << endl;
+        int num_frames = stoi(argv[seq*2+5]);
+        LoadImages(string(argv[(2*seq)+3]), string(argv[(2*seq)+4]), num_frames, vstrImageFilenames[seq], vTimestampsCam[seq]);
+        cout << "LOADED! " << vstrImageFilenames[seq].size()<<endl;
 
         nImages[seq] = vstrImageFilenames[seq].size();
         tot_images += nImages[seq];
@@ -89,7 +90,7 @@ int main(int argc, char **argv)
     cout.precision(17);
 
     // Create SLAM system. It initializes all system threads and gets ready to process frames.
-    ORB_SLAM3::System SLAM(argv[1],argv[2],ORB_SLAM3::System::MONOCULAR,false, 0, file_name);
+    ORB_SLAM3::System SLAM(argv[1],argv[2],ORB_SLAM3::System::MONOCULAR,true, 0, file_name);
     float imageScale = SLAM.GetImageScale();
 
     double t_resize = 0.f;
@@ -176,7 +177,7 @@ int main(int argc, char **argv)
                 T = vTimestampsCam[seq][ni+1]-tframe;
             else if(ni>0)
                 T = tframe-vTimestampsCam[seq][ni-1];
-
+            T/=1e9;
             if(ttrack<T)
                 usleep((T-ttrack)*1e6); // 1e6
 
@@ -201,8 +202,10 @@ int main(int argc, char **argv)
 
     if (bFileName)
     {
-        const string kf_file =  "kf_" + string(argv[argc-1]) + ".txt";
-        const string f_file =  "f_" + string(argv[argc-1]) + ".txt";
+        // const string kf_file =  "kf_" + string(argv[argc-1]) + ".txt";
+        // const string f_file =  "f_" + string(argv[argc-1]) + ".txt";
+        const string kf_file =  "kf_" + string(argv[argc-1]) + ".csv";
+        const string f_file =  "f_" + string(argv[argc-1]) + ".csv";
         SLAM.SaveTrajectoryEuRoC(f_file);
         SLAM.SaveKeyFrameTrajectoryEuRoC(kf_file);
     }
@@ -227,13 +230,14 @@ int main(int argc, char **argv)
 }
 
 
-void LoadImages(const string &strImagePath, const string &strPathTimes,
+void LoadImages(const string &strImagePath, const string &strPathTimes, const int num_frames,
                 vector<string> &vstrImages, vector<double> &vTimeStamps)
 {
     ifstream fTimes;
     fTimes.open(strPathTimes.c_str());
     vTimeStamps.reserve(5000);
     vstrImages.reserve(5000);
+    int frame_no = 1;
     while(!fTimes.eof())
     {
         string s;
@@ -249,7 +253,13 @@ void LoadImages(const string &strImagePath, const string &strPathTimes,
 
             vstrImages.push_back(strImagePath + "/" + item + ".png");
             double t = stod(item);
-            vTimeStamps.push_back(t/1e9);
+            vTimeStamps.push_back(t);
+            // cout<<t<<" : "<<t/1e9<<endl;
+            frame_no++;
+            if(frame_no > 0 && frame_no > num_frames)
+            {
+                break;
+            }
         }
     }
 }
