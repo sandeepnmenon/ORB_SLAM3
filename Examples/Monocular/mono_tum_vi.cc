@@ -256,7 +256,7 @@ void LoadImages(const string &strImagePath, const string &strPathTimes, const in
             vTimeStamps.push_back(t);
             // cout<<t<<" : "<<t/1e9<<endl;
             frame_no++;
-            if(frame_no > 0 && frame_no > num_frames)
+            if(num_frames > 0 && frame_no > num_frames)
             {
                 break;
             }
