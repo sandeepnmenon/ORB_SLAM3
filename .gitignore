@@ -97,5 +97,6 @@ Examples/*/CameraTrajectory*.txt
 Examples/*/kf_*.csv
 Examples/*/KeyFrameTrajectory*.txt
 Examples/*/Results/
+*.npy
 
 .vscode/

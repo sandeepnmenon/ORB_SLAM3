@@ -39,6 +39,9 @@ MESSAGE("OPENCV VERSION:")
 MESSAGE(${OpenCV_VERSION})
 
 find_package(Eigen3 3.1.0 REQUIRED)
+if(NOT Eigen3_FOUND)
+   message(FATAL_ERROR "Eigen3 not found.")
+endif()
 find_package(Pangolin REQUIRED)
 find_package(realsense2)
 
