@@ -28,21 +28,21 @@
 
 using namespace std;
 
-void LoadImages(const string &strPathLeft, const string &strPathRight, const string &strPathTimes,
+void LoadImages(const string &strPathLeft, const string &strPathRight, const string &strPathTimes, const int num_frames,
                 vector<string> &vstrImageLeft, vector<string> &vstrImageRight, vector<double> &vTimeStamps);
 
 int main(int argc, char **argv)
 {  
     if(argc < 5)
     {
-        cerr << endl << "Usage: ./stereo_euroc path_to_vocabulary path_to_settings path_to_sequence_folder_1 path_to_times_file_1 (path_to_image_folder_2 path_to_times_file_2 ... path_to_image_folder_N path_to_times_file_N) (trajectory_file_name)" << endl;
+        cerr << endl << "Usage: ./stereo_euroc path_to_vocabulary path_to_settings path_to_sequence_folder_1 path_to_times_file_1 number_frames_1 (path_to_image_folder_2 path_to_times_file_2 ... path_to_image_folder_N path_to_times_file_N) (trajectory_file_name)" << endl;
 
         return 1;
     }
 
-    const int num_seq = (argc-3)/2;
+    const int num_seq = (argc-4)/2;
     cout << "num_seq = " << num_seq << endl;
-    bool bFileName= (((argc-3) % 2) == 1);
+    bool bFileName= (((argc-4) % 2) == 1);
     string file_name;
     if (bFileName)
     {
@@ -72,9 +72,10 @@ int main(int argc, char **argv)
 
         string pathCam0 = pathSeq + "/mav0/cam0/data";
         string pathCam1 = pathSeq + "/mav0/cam1/data";
+        int num_frames = stoi(argv[seq*2+5]);
 
-        LoadImages(pathCam0, pathCam1, pathTimeStamps, vstrImageLeft[seq], vstrImageRight[seq], vTimestampsCam[seq]);
-        cout << "LOADED!" << endl;
+        LoadImages(pathCam0, pathCam1, pathTimeStamps, num_frames, vstrImageLeft[seq], vstrImageRight[seq], vTimestampsCam[seq]);
+        cout << "LOADED! " << vTimestampsCam[seq].size()<<endl;
 
         nImages[seq] = vstrImageLeft[seq].size();
         tot_images += nImages[seq];
@@ -153,6 +154,7 @@ int main(int argc, char **argv)
             else if(ni>0)
                 T = tframe-vTimestampsCam[seq][ni-1];
 
+            T/=1e9;
             if(ttrack<T)
                 usleep((T-ttrack)*1e6); // 1e6
         }
@@ -185,7 +187,7 @@ int main(int argc, char **argv)
     return 0;
 }
 
-void LoadImages(const string &strPathLeft, const string &strPathRight, const string &strPathTimes,
+void LoadImages(const string &strPathLeft, const string &strPathRight, const string &strPathTimes, const int num_frames,
                 vector<string> &vstrImageLeft, vector<string> &vstrImageRight, vector<double> &vTimeStamps)
 {
     ifstream fTimes;
@@ -193,6 +195,7 @@ void LoadImages(const string &strPathLeft, const string &strPathRight, const str
     vTimeStamps.reserve(5000);
     vstrImageLeft.reserve(5000);
     vstrImageRight.reserve(5000);
+    int frame_no = 1;
     while(!fTimes.eof())
     {
         string s;
@@ -205,8 +208,12 @@ void LoadImages(const string &strPathLeft, const string &strPathRight, const str
             vstrImageRight.push_back(strPathRight + "/" + ss.str() + ".png");
             double t;
             ss >> t;
-            vTimeStamps.push_back(t/1e9);
-
+            vTimeStamps.push_back(t);
+            frame_no++;
+            if(num_frames > 0 && frame_no > num_frames)
+            {
+                break;
+            }
         }
     }
 }
