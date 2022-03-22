@@ -42,7 +42,8 @@ int main(int argc, char **argv)
     // Retrieve paths to images
     vector<string> vstrImageFilenames;
     vector<double> vTimestamps;
-    LoadImages(string(argv[3]), vstrImageFilenames, vTimestamps);
+    string path_to_sequence = string(argv[3]);
+    LoadImages(path_to_sequence, vstrImageFilenames, vTimestamps);
 
     int nImages = vstrImageFilenames.size();
 
@@ -148,7 +149,8 @@ int main(int argc, char **argv)
     cout << "mean tracking time: " << totaltime/nImages << endl;
 
     // Save camera trajectory
-    SLAM.SaveKeyFrameTrajectoryTUM("KeyFrameTrajectory.txt");    
+    string output_path = path_to_sequence + "/KeyFrameTrajectory.csv";
+    SLAM.SaveKeyFrameTrajectoryTUM(output_path);    
 
     return 0;
 }
