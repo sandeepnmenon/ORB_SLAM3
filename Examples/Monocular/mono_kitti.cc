@@ -31,6 +31,9 @@ using namespace std;
 void LoadImages(const string &strSequence, vector<string> &vstrImageFilenames,
                 vector<double> &vTimestamps);
 
+void LoadImagesRawDataset(const string &strSequence, vector<string> &vstrImageFilenames,
+                vector<double> &vTimestamps);
+
 int main(int argc, char **argv)
 {
     if(argc != 4)
@@ -43,7 +46,8 @@ int main(int argc, char **argv)
     vector<string> vstrImageFilenames;
     vector<double> vTimestamps;
     string path_to_sequence = string(argv[3]);
-    LoadImages(path_to_sequence, vstrImageFilenames, vTimestamps);
+    // LoadImages(path_to_sequence, vstrImageFilenames, vTimestamps);
+    LoadImagesRawDataset(path_to_sequence, vstrImageFilenames, vTimestamps);
 
     int nImages = vstrImageFilenames.size();
 
@@ -183,6 +187,38 @@ void LoadImages(const string &strPathToSequence, vector<string> &vstrImageFilena
     {
         stringstream ss;
         ss << setfill('0') << setw(6) << i;
+        vstrImageFilenames[i] = strPrefixLeft + ss.str() + ".png";
+    }
+}
+
+void LoadImagesRawDataset(const string &strPathToSequence, vector<string> &vstrImageFilenames, vector<double> &vTimestamps)
+{
+    ifstream fTimes;
+    string strPathTimeFile = strPathToSequence + "/times.txt";
+    fTimes.open(strPathTimeFile.c_str());
+    while(!fTimes.eof())
+    {
+        string s;
+        getline(fTimes,s);
+        if(!s.empty())
+        {
+            stringstream ss;
+            ss << s;
+            double t;
+            ss >> t;
+            vTimestamps.push_back(t);
+        }
+    }
+
+    string strPrefixLeft = strPathToSequence + "/data/";
+
+    const int nTimes = vTimestamps.size();
+    vstrImageFilenames.resize(nTimes);
+
+    for(int i=0; i<nTimes; i++)
+    {
+        stringstream ss;
+        ss << setfill('0') << setw(10) << i;
         vstrImageFilenames[i] = strPrefixLeft + ss.str() + ".png";
     }
 }
