@@ -206,8 +206,10 @@ int main(int argc, char **argv)
         // const string f_file =  "f_" + string(argv[argc-1]) + ".txt";
         const string kf_file =  "kf_" + string(argv[argc-1]) + ".csv";
         const string f_file =  "f_" + string(argv[argc-1]) + ".csv";
+        const string map_file = "map_" + string(argv[argc-1]) + ".csv";
         SLAM.SaveTrajectoryEuRoC(f_file);
         SLAM.SaveKeyFrameTrajectoryEuRoC(kf_file);
+        SLAM.SaveMapPoints(map_file);
     }
     else
     {
@@ -238,6 +240,7 @@ void LoadImages(const string &strImagePath, const string &strPathTimes, const in
     vTimeStamps.reserve(5000);
     vstrImages.reserve(5000);
     int frame_no = 1;
+    int start_frame = 100;
     while(!fTimes.eof())
     {
         string s;
@@ -247,6 +250,9 @@ void LoadImages(const string &strImagePath, const string &strPathTimes, const in
         {
             if (s[0] == '#')
                 continue;
+            frame_no++;
+            // if(frame_no < start_frame)
+            //     continue;
 
             int pos = s.find(' ');
             string item = s.substr(0, pos);
@@ -255,7 +261,6 @@ void LoadImages(const string &strImagePath, const string &strPathTimes, const in
             double t = stod(item);
             vTimeStamps.push_back(t);
             // cout<<t<<" : "<<t/1e9<<endl;
-            frame_no++;
             if(num_frames > 0 && frame_no > num_frames)
             {
                 break;

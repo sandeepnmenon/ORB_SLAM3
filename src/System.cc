@@ -684,6 +684,12 @@ void System::SaveTrajectoryEuRoC(const string &filename)
     }
 
     vector<KeyFrame*> vpKFs = pBiggerMap->GetAllKeyFrames();
+    // If map has zero keyframes, return
+    if(vpKFs.empty())
+    {
+        cerr << "ERROR: SaveTrajectoryEuRoC cannot be used for empty maps." << endl;
+        return;
+    }
     sort(vpKFs.begin(),vpKFs.end(),KeyFrame::lId);
 
     // Transform all keyframes so that the first keyframe is at the origin.
@@ -1262,6 +1268,27 @@ void System::SaveTrajectoryKITTI(const string &filename)
     f.close();
 }
 
+void System::SaveMapPoints(const string &filename)
+{
+    ofstream f;
+    f.open(filename);
+    f << fixed;
+    vector<MapPoint*> mapPoints = mpAtlas->GetAllMapPoints();
+    for(int i=0; i<mapPoints.size(); i++)
+    {
+        MapPoint* pMP = mapPoints[i];
+        if(pMP->isBad())
+            continue;
+        else
+        {
+            Eigen::Matrix<float,3,1> pos = pMP->GetWorldPos();
+            cv::Mat descriptor = pMP->GetDescriptor();
+            cout<<"descriptor size: "<<descriptor.size()<< descriptor<<endl;
+            f << setprecision(9) << pos(0) << ", " << pos(1) << ", " << pos(2) << ", " << descriptor <<endl;
+        }
+    }
+    f.close();
+}
 
 void System::SaveDebugData(const int &initIdx)
 {

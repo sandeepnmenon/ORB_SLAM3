@@ -98,6 +98,7 @@ Examples/*/CameraTrajectory*.csv
 Examples/*/kf_*.csv
 Examples/*/KeyFrameTrajectory*.txt
 Examples/*/KeyFrameTrajectory*.csv
+Examples/*/map_*.csv
 Examples/*/Results/
 *.npy
 

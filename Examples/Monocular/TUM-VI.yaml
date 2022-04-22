@@ -5,6 +5,9 @@
 #--------------------------------------------------------------------------------------------
 File.version: "1.0"
 
+# The store file is created from the current session, if a file with the same name exists it is deleted
+# System.SaveAtlasToFile: "Session_TUM_Mono"
+
 Camera.type: "KannalaBrandt8"
 
 # Camera calibration and distortion parameters (OpenCV) 
