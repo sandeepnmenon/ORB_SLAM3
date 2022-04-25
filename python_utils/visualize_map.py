@@ -45,13 +45,13 @@ pcd2.paint_uniform_color([0, 1, 0])
 
 good_matches = get_orb_matches(descriptors1, descriptors2)
 good_matches = sorted(good_matches, key=lambda x: x.distance)
+print("Good matches: {}".format(len(good_matches)))
 
 positions = np.concatenate((positions1, positions2))
 lines = []
 
 for match in good_matches:
     lines.append([match.queryIdx, len(descriptors1) + match.trainIdx])
-
 
 colors = [[1, 0, 0] for i in range(len(positions))]
 line_set = o3d.geometry.LineSet(

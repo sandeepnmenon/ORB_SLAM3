@@ -1283,7 +1283,6 @@ void System::SaveMapPoints(const string &filename)
         {
             Eigen::Matrix<float,3,1> pos = pMP->GetWorldPos();
             cv::Mat descriptor = pMP->GetDescriptor();
-            cout<<"descriptor size: "<<descriptor.size()<< descriptor<<endl;
             f << setprecision(9) << pos(0) << ", " << pos(1) << ", " << pos(2) << ", " << descriptor <<endl;
         }
     }
