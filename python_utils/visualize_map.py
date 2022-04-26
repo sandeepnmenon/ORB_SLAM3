@@ -4,30 +4,15 @@ import os
 import csv
 import open3d as o3d
 from opencv_utils import get_orb_matches
+from orbslam_utils import read_orb_data
+
 
 orb_features1 = "/home/menonsandu/stereo-callibration/ORB_SLAM3/Examples/Monocular/map_dataset-corridor_100.csv"
 orb_features2 = "/home/menonsandu/stereo-callibration/ORB_SLAM3/Examples/Monocular/map_dataset-corridor_100_200.csv"
 
-def read_orb_data(file_path):
-    positions = []
-    descriptors = []
-    with open(file_path, newline='') as f:
-        reader = csv.reader(f)
-        data = list(reader)
-    
-    for row in data:
-        position=[]
-        for i in range(3):
-            position.append(row[i])
-        positions.append(position)
-        desc = []
-        for i in range(3,len(row)):
-            desc.append(row[i])
-        desc[0] = desc[0][2:]
-        desc[-1] = desc[-1][:-1]
-        descriptors.append(desc)
-    
-    return np.array(positions).astype(np.float32), np.array(descriptors).astype(np.float32)
+# orb_features1 = "/home/menonsandu/stereo-callibration/ORB_SLAM3/Examples/Monocular/map_dataset-corridor1_570.csv"
+# orb_features2 = "/home/menonsandu/stereo-callibration/ORB_SLAM3/Examples/Monocular/map_dataset-corridor1_570_670.csv"
+
 
 positions1, descriptors1 = read_orb_data(orb_features1)
 positions2, descriptors2 = read_orb_data(orb_features2)
@@ -46,10 +31,10 @@ pcd2.paint_uniform_color([0, 1, 0])
 good_matches = get_orb_matches(descriptors1, descriptors2)
 good_matches = sorted(good_matches, key=lambda x: x.distance)
 print("Good matches: {}".format(len(good_matches)))
+print("Minimum distance: {}".format(good_matches[0].distance))
 
 positions = np.concatenate((positions1, positions2))
 lines = []
-
 for match in good_matches:
     lines.append([match.queryIdx, len(descriptors1) + match.trainIdx])
 
