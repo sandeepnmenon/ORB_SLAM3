@@ -1,9 +1,11 @@
 import numpy as np
 from scipy import optimize
+import open3d as o3d
 
 from opencv_utils import get_orb_matches
 from orbslam_utils import read_orb_data, eulerangles_to_rotmat
-import open3d as o3d
+from shared_utils import transform_points3d_list, visualize_points_with_matching_lines
+
 
 orb_features1 = "/home/menonsandu/stereo-callibration/ORB_SLAM3/Examples/Monocular/map_dataset-corridor_100.csv"
 orb_features2 = "/home/menonsandu/stereo-callibration/ORB_SLAM3/Examples/Monocular/map_dataset-corridor_100_200.csv"
@@ -85,40 +87,12 @@ print(f"Error: {error}")
 
 
 # Transform the matched positions
-transformed_positions1 = []
-for idx, position in enumerate(positions1):
-    # Scale the query point
-    scaled_position = position * optimized_scale
-    scaled_position = scaled_position.reshape(3, 1)
-
-    # Transform the matched position
-    transformed_position = np.matmul(optimized_rotation_matrix, scaled_position) + optimized_translation
-    transformed_position = transformed_position.reshape(3)
-    transformed_positions1.append(transformed_position)
-
-transformed_positions1 = np.array(transformed_positions1).astype(np.float32)
+transformed_positions1 = transform_points3d_list(positions1, optimized_scale, optimized_rotation_matrix, optimized_translation)
 
 # Visualise the results
 visualize = True
 if visualize:
     positions1 = transformed_positions1
-    positions = np.concatenate((positions1, positions2))
-    lines = []
-    for match in good_matches:
-        lines.append([match.queryIdx, len(descriptors1) + match.trainIdx])
+    visualize_points_with_matching_lines(positions1, positions2, good_matches)
 
-    colors = [[1, 0, 0] for i in range(len(positions))]
-    line_set = o3d.geometry.LineSet(
-        points=o3d.utility.Vector3dVector(positions),
-        lines=o3d.utility.Vector2iVector(lines),
-    )
-    line_set.colors = o3d.utility.Vector3dVector(colors)
 
-    pcd1 = o3d.geometry.PointCloud()
-    pcd1.points = o3d.utility.Vector3dVector(positions1)
-    pcd1.paint_uniform_color([1, 0, 0])
-
-    pcd2 = o3d.geometry.PointCloud()
-    pcd2.points = o3d.utility.Vector3dVector(positions2)
-    pcd2.paint_uniform_color([0, 1, 0])
-    o3d.visualization.draw_geometries([pcd1, pcd2, line_set])
