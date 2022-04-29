@@ -19,58 +19,64 @@ orb_features1 = "/home/menonsandu/stereo-callibration/ORB_SLAM3/Examples/Monocul
 orb_features2 = "/home/menonsandu/stereo-callibration/ORB_SLAM3/Examples/Monocular/map_dataset-corridor1_570_670.csv"
 
 
-positions1, descriptors1 = read_orb_data(orb_features1)
-positions2, descriptors2 = read_orb_data(orb_features2)
+def get_similarity_transform_3d(positions1, positions2, good_matches):
+    
+    src_points = []
+    dst_points = []
+    for match in good_matches:
+        src_points.append(positions1[match.queryIdx])
+        dst_points.append(positions2[match.trainIdx])
 
-good_matches = get_orb_matches(descriptors1, descriptors2)
-good_matches = sorted(good_matches, key=lambda x: x.distance)
-print("Good matches: {}".format(len(good_matches)))
-print("Minimum distance: {}".format(good_matches[0].distance))
+    src_points = np.array(src_points)
+    dst_points = np.array(dst_points)
+    print("src_points: {}".format(src_points.shape))
+    print("dst_points: {}".format(dst_points.shape))
 
-src_points = []
-dst_points = []
-for match in good_matches:
-    src_points.append(positions1[match.queryIdx])
-    dst_points.append(positions2[match.trainIdx])
+    # estimate the transformation
+    model = SimilarityTransform(dimensionality=3)
+    is_success = model.estimate(src_points, dst_points)
 
-src_points = np.array(src_points)
-dst_points = np.array(dst_points)
-print("src_points: {}".format(src_points.shape))
-print("dst_points: {}".format(dst_points.shape))
-
-# estimate the transformation
-model = SimilarityTransform(dimensionality=3)
-is_success = model.estimate(src_points, dst_points)
-
-# compare "true" and estimated transform parameters
-print("Affine transformation ", "successfull" if is_success else "failed")
-if is_success:
-    print(model.scale, np.rad2deg(model.rotation), model.translation, model.dimensionality)
-    print(model.params)
-    print(np.mean(model.residuals(src_points, dst_points)))
+    # compare "true" and estimated transform parameters
+    print("Affine transformation ", "successfull" if is_success else "failed")
+    if is_success:
+        print(model.scale, np.rad2deg(model.rotation), model.translation, model.dimensionality)
+        print(model.params)
+        print(np.mean(model.residuals(src_points, dst_points)))
 
 
-# robustly estimate affine transform model with RANSAC
-tranform = SimilarityTransform3D()
-print(tranform.dimensionality)
-model_robust, inliers = ransac((src_points, dst_points), SimilarityTransform3D, min_samples=3, residual_threshold=1, max_trials=100)
-outliers = inliers == False
+    # robustly estimate affine transform model with RANSAC
+    tranform = SimilarityTransform3D()
+    print(tranform.dimensionality)
+    model_robust, inliers = ransac((src_points, dst_points), SimilarityTransform3D, min_samples=3, residual_threshold=1, max_trials=100)
+    outliers = inliers == False
 
-print("RANSAC:")
-print(model_robust.scale, np.rad2deg(model_robust.rotation), model_robust.translation, model_robust.dimensionality)
-print(model_robust.params)
-print(np.mean(model_robust.residuals(src_points, dst_points)))
-optimized_scale = model_robust.scale
-optimized_rotation = model_robust.rotation
-optimized_translation = model_robust.translation.reshape(3, 1)
-optimized_rotation_matrix = eulerangles_to_rotmat(optimized_rotation[0], optimized_rotation[1], optimized_rotation[2])
+    print("RANSAC:")
+    print(model_robust.scale, np.rad2deg(model_robust.rotation), model_robust.translation, model_robust.dimensionality)
+    print(model_robust.params)
+    print(np.mean(model_robust.residuals(src_points, dst_points)))
+    optimized_scale = model_robust.scale
+    optimized_rotation = model_robust.rotation
+    optimized_translation = model_robust.translation.reshape(3, 1)
+    optimized_rotation_matrix = eulerangles_to_rotmat(optimized_rotation[0], optimized_rotation[1], optimized_rotation[2])
 
-# Transform the matched positions
-transformed_positions1 = transform_points3d_list(positions1, optimized_scale, optimized_rotation_matrix, optimized_translation)
+    return optimized_scale, optimized_rotation, optimized_translation, optimized_rotation_matrix
 
-# Visualise the results
-visualize = True
-if visualize:
-    positions1 = transformed_positions1
-    visualize_points_with_matching_lines(positions1, positions2, good_matches)
 
+if __name__ == "__main__":
+    positions1, descriptors1 = read_orb_data(orb_features1)
+    positions2, descriptors2 = read_orb_data(orb_features2)
+    good_matches = get_orb_matches(descriptors1, descriptors2)
+    good_matches = sorted(good_matches, key=lambda x: x.distance)
+    print("Good matches: {}".format(len(good_matches)))
+    print("Minimum distance: {}".format(good_matches[0].distance))
+
+    optimized_scale, optimized_rotation, optimized_translation, optimized_rotation_matrix = get_similarity_transform_3d(positions1, positions2, good_matches)
+
+    # Transform the matched positions
+    transformed_positions1 = transform_points3d_list(positions1, optimized_scale, optimized_rotation_matrix, optimized_translation)
+
+    # Visualise the results
+    visualize = True
+    if visualize:
+        positions1 = transformed_positions1
+        visualize_points_with_matching_lines(positions1, positions2, good_matches)

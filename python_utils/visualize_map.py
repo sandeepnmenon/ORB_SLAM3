@@ -5,7 +5,8 @@ import csv
 import open3d as o3d
 from opencv_utils import get_orb_matches
 from orbslam_utils import read_orb_data
-
+from similarity_transform import get_similarity_transform_3d
+from shared_utils import transform_points3d_list, visualize_points_with_matching_lines
 
 orb_features1 = "/home/menonsandu/stereo-callibration/ORB_SLAM3/Examples/Monocular/map_dataset-corridor_100.csv"
 orb_features2 = "/home/menonsandu/stereo-callibration/ORB_SLAM3/Examples/Monocular/map_dataset-corridor_100_200.csv"
@@ -33,15 +34,13 @@ good_matches = sorted(good_matches, key=lambda x: x.distance)
 print("Good matches: {}".format(len(good_matches)))
 print("Minimum distance: {}".format(good_matches[0].distance))
 
-positions = np.concatenate((positions1, positions2))
-lines = []
-for match in good_matches:
-    lines.append([match.queryIdx, len(descriptors1) + match.trainIdx])
+# Visualize the matches
+visualize_points_with_matching_lines(positions1, positions2, good_matches)
 
-colors = [[1, 0, 0] for i in range(len(positions))]
-line_set = o3d.geometry.LineSet(
-    points=o3d.utility.Vector3dVector(positions),
-    lines=o3d.utility.Vector2iVector(lines),
-)
-line_set.colors = o3d.utility.Vector3dVector(colors)
-o3d.visualization.draw_geometries([pcd1, pcd2, line_set])
+# Visualise the matches after map matching
+optimized_scale, optimized_rotation, optimized_translation, optimized_rotation_matrix = get_similarity_transform_3d(positions1, positions2, good_matches)
+# Transform the matched positions
+transformed_positions1 = transform_points3d_list(positions1, optimized_scale, optimized_rotation_matrix, optimized_translation)
+positions1 = transformed_positions1
+visualize_points_with_matching_lines(positions1, positions2, good_matches)
+
