@@ -25,6 +25,31 @@ def read_orb_data(file_path):
     return np.array(positions).astype(np.float32), np.array(descriptors).astype(np.float32)
 
 
+def read_time_stamped_poses_from_csv_file(csv_file,  time_scale=1.0):
+    """
+    Reads time stamped poses from a CSV file.
+    Assumes the following line format:
+      timestamp [s], x [m], y [m], z [m], qx, qy, qz, qw
+    """
+    with open(csv_file, 'r') as csvfile:
+        csv_reader = csv.reader(csvfile, delimiter=',', quotechar='|')
+        csv_data = list(csv_reader)
+        if 'time' in csv_data[0][0]:
+            # The first line is the header
+            csv_data = csv_data[1:]
+        time_stamped_poses = np.array(csv_data)
+        time_stamped_poses = time_stamped_poses.astype(float)
+
+    time_stamped_poses[:, 0] *= time_scale
+    # Extract the quaternions from the poses.
+    times = time_stamped_poses[:, 0].copy()
+    xyz = time_stamped_poses[:, 1:4].copy()
+    quaternions = time_stamped_poses[:, 4:8].copy()
+    print("Read {} poses from {}.".format(len(times), csv_file))
+
+    return times, xyz, quaternions
+
+
 def eulerangles_to_rotmat(roll, pitch, yaw):
     rotmat_roll = np.array(
         [
