@@ -23,20 +23,13 @@ frame_times1, xyz1, quaternions1 = read_time_stamped_poses_from_csv_file(
     frame_points1, time_scale=1.0)
 frame_times2, xyz2, quaternions2 = read_time_stamped_poses_from_csv_file(
     frame_points2, time_scale=1.0)
+key_frame_times1, kf_xyz1, kf_quaternions1 = read_time_stamped_poses_from_csv_file(
+    key_frame_points1, time_scale=1.0)
+key_frame_times2, kf_xyz2, kf_quaternions2 = read_time_stamped_poses_from_csv_file(
+    key_frame_points2, time_scale=1.0)
 
 positions1, descriptors1 = read_orb_data(orb_features1)
 positions2, descriptors2 = read_orb_data(orb_features2)
-
-# Visualize positions of the two datasets with different colors
-pcd1 = o3d.geometry.PointCloud()
-pcd1.points = o3d.utility.Vector3dVector(positions1)
-pcd1.paint_uniform_color([1, 0, 0])
-
-pcd2 = o3d.geometry.PointCloud()
-pcd2.points = o3d.utility.Vector3dVector(positions2)
-pcd2.paint_uniform_color([0, 1, 0])
-
-# o3d.visualization.draw_geometries([pcd1, pcd2])
 
 good_matches = get_orb_matches(descriptors1, descriptors2)
 good_matches = sorted(good_matches, key=lambda x: x.distance)
@@ -47,6 +40,8 @@ display = True
 # Visualize the matches
 visualize_points_with_matching_lines(
     positions1, positions2, good_matches, trajectory1_points=xyz1, trajectory2_points=xyz2, display=display)
+visualize_points_with_matching_lines(
+    positions1, positions2, good_matches, trajectory1_points=kf_xyz1, trajectory2_points=kf_xyz2, display=display)
 
 # Visualise the matches after map matching
 optimized_scale, optimized_rotation, optimized_translation, optimized_rotation_matrix = get_similarity_transform_3d(
@@ -58,6 +53,12 @@ positions1 = transformed_positions1
 transformed_xyz1 = transform_points3d_list(
     xyz1, optimized_scale, optimized_rotation_matrix, optimized_translation)
 xyz1 = transformed_xyz1
+transformed_kf_xyz1 = transform_points3d_list(
+    kf_xyz1, optimized_scale, optimized_rotation_matrix, optimized_translation)
+kf_xyz1 = transformed_kf_xyz1
 
 visualize_points_with_matching_lines(
     positions1, positions2, good_matches, trajectory1_points=xyz1, trajectory2_points=xyz2, display=display)
+
+visualize_points_with_matching_lines(
+    positions1, positions2, good_matches, trajectory1_points=kf_xyz1, trajectory2_points=kf_xyz2, display=display)
