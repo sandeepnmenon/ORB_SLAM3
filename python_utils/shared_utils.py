@@ -47,13 +47,13 @@ def visualize_points_with_matching_lines(positions1, positions2, cv2_matches, tr
     trajectory1 = o3d.geometry.PointCloud()
     if trajectory1_points is not None:
         trajectory1.points = o3d.utility.Vector3dVector(trajectory1_points)
-        trajectory1.paint_uniform_color([1, 1, 0])
+        trajectory1.paint_uniform_color([1, 1, 0])  # yellow
 
     trajectory2 = o3d.geometry.PointCloud()
     if trajectory2_points is not None:
         trajectory2 = o3d.geometry.PointCloud()
         trajectory2.points = o3d.utility.Vector3dVector(trajectory2_points)
-        trajectory2.paint_uniform_color([0, 1, 1])
+        trajectory2.paint_uniform_color([0, 1, 1])  # light blue
 
     o3d.visualization.draw_geometries(
         [pcd1, pcd2, line_set, trajectory1, trajectory2])

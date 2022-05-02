@@ -47,16 +47,17 @@ def get_similarity_transform_3d(positions1, positions2, good_matches):
     # robustly estimate affine transform model with RANSAC
     tranform = SimilarityTransform3D()
     print(tranform.dimensionality)
-    model_robust, inliers = ransac((src_points, dst_points), SimilarityTransform3D, min_samples=3, residual_threshold=1, max_trials=100)
+    model_robust, inliers = ransac((src_points, dst_points), SimilarityTransform3D, min_samples=3, residual_threshold=0.05, max_trials=100)
     outliers = inliers == False
+    model = model_robust
 
     print("RANSAC:")
-    print(model_robust.scale, np.rad2deg(model_robust.rotation), model_robust.translation, model_robust.dimensionality)
-    print(model_robust.params)
-    print(np.mean(model_robust.residuals(src_points, dst_points)))
-    optimized_scale = model_robust.scale
-    optimized_rotation = model_robust.rotation
-    optimized_translation = model_robust.translation.reshape(3, 1)
+    print(model.scale, np.rad2deg(model.rotation), model.translation, model.dimensionality)
+    print(model.params)
+    print(np.mean(model.residuals(src_points, dst_points)))
+    optimized_scale = model.scale
+    optimized_rotation = model.rotation
+    optimized_translation = model.translation.reshape(3, 1)
     optimized_rotation_matrix = eulerangles_to_rotmat(optimized_rotation[0], optimized_rotation[1], optimized_rotation[2])
 
     return optimized_scale, optimized_rotation, optimized_translation, optimized_rotation_matrix
