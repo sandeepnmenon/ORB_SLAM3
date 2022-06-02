@@ -212,6 +212,10 @@ add_executable(mono_custom
         Examples/Monocular/mono_custom.cc)
 target_link_libraries(mono_custom ${PROJECT_NAME})
 
+add_executable(mono_oxford_robotcar
+        Examples/Monocular/mono_oxford_robotcar.cc)
+target_link_libraries(mono_oxford_robotcar ${PROJECT_NAME})
+
 if(realsense2_FOUND)
     add_executable(mono_realsense_t265
             Examples/Monocular/mono_realsense_t265.cc)
