@@ -60,6 +60,8 @@ def get_similarity_transform_3d(positions1, positions2, good_matches):
     optimized_translation = model.translation.reshape(3, 1)
     optimized_rotation_matrix = eulerangles_to_rotmat(optimized_rotation[0], optimized_rotation[1], optimized_rotation[2])
 
+    # TODO: Use Similartity transform with inliers again
+    
     return optimized_scale, optimized_rotation, optimized_translation, optimized_rotation_matrix
 
 
