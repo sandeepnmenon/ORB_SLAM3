@@ -519,8 +519,8 @@ void System::Shutdown()
         mbShutDown = true;
     }
 
-    cout << "Shutdown" << endl;
-
+    cout << "Shutdown (press any key)" << endl;
+    cin.get();
     mpLocalMapper->RequestFinish();
     mpLoopCloser->RequestFinish();
     if(mpViewer)

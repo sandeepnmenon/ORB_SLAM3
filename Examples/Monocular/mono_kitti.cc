@@ -196,6 +196,12 @@ void LoadImagesRawDataset(const string &strPathToSequence, vector<string> &vstrI
     ifstream fTimes;
     string strPathTimeFile = strPathToSequence + "/times.txt";
     fTimes.open(strPathTimeFile.c_str());
+    // Check if file exists
+    if(!fTimes.is_open())
+    {
+        cerr << endl << "Failed to open file " << strPathTimeFile << endl;
+        throw std::runtime_error("Failed to open file");
+    }
     while(!fTimes.eof())
     {
         string s;
