@@ -207,6 +207,11 @@ void LoadImages(const string &strImagePath, const string &strPathTimes, const in
 {
     ifstream fTimes;
     fTimes.open(strPathTimes.c_str());
+    if(!fTimes.is_open())
+    {
+        cerr << endl << "Failed to open file " << strPathTimes << endl;
+        throw std::runtime_error("Failed to open file");
+    }
     vTimeStamps.reserve(5000);
     vstrImages.reserve(5000);
     int frame_no = 1;

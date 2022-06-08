@@ -166,6 +166,12 @@ void LoadImages(const string &strPathToSequence, const int num_frames,
 
     ifstream fTimes;
     fTimes.open(strPathTimes.c_str());
+    // Check if file exists
+    if(!fTimes.is_open())
+    {
+        cerr << endl << "Failed to open file " << strPathTimes << endl;
+        throw std::runtime_error("Failed to open file");
+    }
     vTimeStamps.reserve(5000);
     vstrImageFilenames.reserve(5000);
     int frame_no = 1;
